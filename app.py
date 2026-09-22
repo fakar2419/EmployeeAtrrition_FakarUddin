@@ -94,10 +94,24 @@ html, body, [class*="css"] {
 
 @st.cache_resource
 def load_artifacts():
-    preprocessor = joblib.load("models/preprocessor.joblib")
-    model = joblib.load("models/xgb_model.joblib")
-    with open("models/metadata.json", "r") as f:
-        metadata = json.load(f)
+    preprocessor_path = "models/preprocessor.joblib"
+    model_path = "models/xgb_model.joblib"
+    metadata_path = "models/metadata.json"
+    
+    try:
+        preprocessor = joblib.load(preprocessor_path)
+        model = joblib.load(model_path)
+        with open(metadata_path, "r") as f:
+            metadata = json.load(f)
+    except Exception as e:
+        # Re-train model in current environment if pickled files are incompatible
+        from train_pipeline import main as run_training
+        run_training()
+        preprocessor = joblib.load(preprocessor_path)
+        model = joblib.load(model_path)
+        with open(metadata_path, "r") as f:
+            metadata = json.load(f)
+            
     return preprocessor, model, metadata
 
 @st.cache_data

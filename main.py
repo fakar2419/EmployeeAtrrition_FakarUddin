@@ -22,13 +22,18 @@ PREPROCESSOR_PATH = "models/preprocessor.joblib"
 MODEL_PATH = "models/xgb_model.joblib"
 METADATA_PATH = "models/metadata.json"
 
-if not os.path.exists(PREPROCESSOR_PATH) or not os.path.exists(MODEL_PATH):
-    raise RuntimeError("Model artifacts missing in models/ directory. Run train_pipeline.py first.")
-
-preprocessor = joblib.load(PREPROCESSOR_PATH)
-model = joblib.load(MODEL_PATH)
-with open(METADATA_PATH, "r") as f:
-    metadata = json.load(f)
+try:
+    preprocessor = joblib.load(PREPROCESSOR_PATH)
+    model = joblib.load(MODEL_PATH)
+    with open(METADATA_PATH, "r") as f:
+        metadata = json.load(f)
+except Exception:
+    from train_pipeline import main as run_training
+    run_training()
+    preprocessor = joblib.load(PREPROCESSOR_PATH)
+    model = joblib.load(MODEL_PATH)
+    with open(METADATA_PATH, "r") as f:
+        metadata = json.load(f)
 
 class EmployeeData(BaseModel):
     Age: int = Field(..., example=35)
